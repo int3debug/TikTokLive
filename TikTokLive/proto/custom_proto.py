@@ -9,7 +9,7 @@ from typing import Optional, List, Type, TypeVar, Tuple
 import betterproto
 
 from TikTokLive.proto import *
-from TikTokLive.proto import User
+from TikTokLive.proto import User, Gift
 
 # "MessageType" is a proto enum field.
 # This underscore is the difference between life & death, because if you shadow the proto field,
@@ -113,7 +113,7 @@ class ExtendedUser(User):
 
         return (self.follow_info.follow_status or 0) >= 2
 
-    def _get_all_badge_info(self) -> List[Tuple[str, str]]:
+    def _get_all_badge_info(self) -> List[Tuple[str, int]]:
         """
         Retrieve unique badge types with their levels.
 
@@ -128,10 +128,10 @@ class ExtendedUser(User):
             if scene and badge_level:
                 scene_name = str(scene).replace("BADGE_SCENE_TYPE_", "").upper()
                 if scene_name not in badge_dict:
-                    badge_dict[scene_name] = str(badge_level)
+                    badge_dict[scene_name] = int(badge_level)
         return list(badge_dict.items())
 
-    def _get_badge_level(self, badge_type: str, level: Optional[str | int] = None) -> Optional[int]:
+    def _get_badge_level(self, badge_type: str, level: Optional[int] = None) -> Optional[int]:
         """
         Retrieve the level of a specific badge type with optional validation.
 
@@ -143,11 +143,11 @@ class ExtendedUser(User):
         target_badge = badge_type.replace("BADGE_SCENE_TYPE_", "").upper()
         for badge_name, badge_level in self._get_all_badge_info():
             if badge_name == target_badge:
-                if level is None or str(level) == badge_level:
+                if level is None or level == badge_level:
                     return int(badge_level)
         return None
 
-    def has_badge(self, badge_type: str, level: Optional[str | int] = None) -> bool:
+    def has_badge(self, badge_type: str, level: Optional[int] = None) -> bool:
         """
         Check if the user has a specific badge type with optional level validation.
 
@@ -159,7 +159,7 @@ class ExtendedUser(User):
         return self._get_badge_level(badge_type, level) is not None
 
     @property
-    def get_all_badges(self) -> List[Tuple[str, str]]:
+    def get_all_badges(self) -> List[Tuple[str, int]]:
         """
         Retrieve all badges with their types and levels.
 
