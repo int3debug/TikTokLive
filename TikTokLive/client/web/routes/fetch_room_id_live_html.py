@@ -1,5 +1,6 @@
 import json
 import re
+from html.parser import HTMLParser
 from json import JSONDecodeError
 from typing import Optional
 
@@ -60,6 +61,9 @@ class FetchRoomIdLiveHTMLRoute(ClientRoute):
         if match is None:
             raise FailedParseRoomIdError("Failed to extract the SIGI_STATE HTML tag, you might be blocked by TikTok.")
 
+        if cls._is_tiktok_waf_block(html):
+            raise FailedParseRoomIdError("Failed to extract the data, you hit SlardarWAF by TikTok.")
+
         # Load SIGI_STATE JSON
         try:
             sigi_state: dict = json.loads(match.group(1))
@@ -83,3 +87,28 @@ class FetchRoomIdLiveHTMLRoute(ClientRoute):
             raise UserOfflineError(f"The requested TikTok LIVE user{username_str}is offline.")
 
         return room_id
+
+    @classmethod
+    def _is_tiktok_waf_block(cls, html_text: str) -> bool:
+        """ Detect TikTok's WAF block """
+        if "Please wait..." not in html_text:
+            return False
+
+        found = {'slardar': False, 'wci': False}
+
+        def handle_tag(tag, attrs):
+            attrs = dict(attrs)
+            if tag == 'script' and attrs.get('id') == 'slardar-config':
+                found['slardar'] = True
+            if tag == 'p' and attrs.get('id') == 'wci':
+                found['wci'] = True
+
+        parser = HTMLParser()
+        parser.handle_starttag = handle_tag
+
+        try:
+            parser.feed(html_text)
+        except Exception:
+            pass
+
+        return found['slardar'] and found['wci']
