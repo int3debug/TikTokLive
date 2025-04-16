@@ -7,7 +7,6 @@ from typing import Union
 
 from TikTokLive.proto.custom_proto import *
 from .base_event import BaseEvent
-from ..proto import Gift
 
 
 class KaraokeQueueListEvent(BaseEvent, WebcastKaraokeQueueListMessage):
@@ -1193,6 +1192,10 @@ class BarrageEvent(BaseEvent, WebcastBarrageMessage):
     BarrageEvent
 
     """
+
+    # @property
+    # def user(self) -> ExtendedUser:
+    #     return ExtendedUser(self.user_grade_param.user)
 
 
 class CaptionEvent(BaseEvent, WebcastCaptionMessage):

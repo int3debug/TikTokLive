@@ -20,9 +20,9 @@ from TikTokLive.client.ws.ws_connect import WebcastProxy
 from TikTokLive.events import Event, EventHandler, ControlEvent
 from TikTokLive.events.custom_events import WebsocketResponseEvent, FollowEvent, ShareEvent, LiveEndEvent, \
     DisconnectEvent, LivePauseEvent, LiveUnpauseEvent, UnknownEvent, CustomEvent, ConnectEvent
-from TikTokLive.events.proto_events import EVENT_MAPPINGS, ProtoEvent
+from TikTokLive.events.proto_events import EVENT_MAPPINGS, ProtoEvent, JoinEvent
 from TikTokLive.proto import ProtoMessageFetchResult, ProtoMessageFetchResultBaseProtoMessage
-from TikTokLive.proto.custom_proto import ControlAction
+from TikTokLive.proto.custom_proto import ControlAction, ExtendedUser
 
 
 class TikTokLiveClient(AsyncIOEventEmitter):
@@ -391,6 +391,16 @@ class TikTokLiveClient(AsyncIOEventEmitter):
             return [response_event]
 
         parsed_events: List[Event] = [response_event, proto_event]
+
+        # Handle BarrageEvent to also emit JoinEvent
+        if webcast_response_message.method == "WebcastBarrageMessage":
+            try:
+                join_event = JoinEvent()
+                join_event.user = ExtendedUser.from_user(proto_event.user_grade_param.user)
+                parsed_events.append(join_event)
+            except Exception as e:
+                self._logger.error(f"Failed to synthesize JoinEvent from BarrageEvent: {e}")
+
         custom_event: Optional[Event] = await self.handle_custom_event(webcast_response_message, proto_event)
 
         # Add the custom event IF not null
