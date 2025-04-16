@@ -5,7 +5,11 @@ from typing import Type, Union, Optional
 
 from TikTokLive.events.base_event import BaseEvent
 from TikTokLive.events.proto_events import SocialEvent, ControlEvent
-from TikTokLive.proto import ProtoMessageFetchResult
+from TikTokLive.proto import (
+    ProtoMessageFetchResult, CommonMessageData, User, PublicAreaMessageCommon, ExtendedUser,
+    ProtoMessageFetchResultBaseProtoMessage
+)
+
 
 
 class WebsocketResponseEvent(ProtoMessageFetchResult, BaseEvent):
