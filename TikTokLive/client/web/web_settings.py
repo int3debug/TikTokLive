@@ -103,7 +103,7 @@ DEFAULT_REQUEST_HEADERS: Dict[str, str] = {
 }
 
 DEFAULT_COOKIES: Dict[str, str] = {
-    "tt-target-idc": "useast1a"
+    "tt-target-idc": "useast2a"
 }
 
 """The unique identifier for ttlive-python"""
